@@ -1,0 +1,23 @@
+.dad-container{
+    display: flex;
+    justify-Content: center;
+    width: 100vw;
+    height: 550px;
+}
+.son-container{
+    width: 90%;
+    height: 100%;
+}
+.si{
+    border-radius: 20px;
+}
+.me{
+    background-color: rgb(255, 255, 255);
+    border-radius: 20px;
+    border: solid 1px rgb(255, 174, 0);
+    height: 550px;
+}
+
+.ant-layout-sider-children{
+    background-color: rgb(255, 255, 255);
+}

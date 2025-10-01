@@ -1,0 +1,11 @@
+.dad-container{
+    width: 100vw;
+    height: 1000px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+.cart-container{
+    position: absolute;
+    top: 100px;
+}

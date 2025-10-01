@@ -1,0 +1,22 @@
+.dad-container{
+    border-radius: 10px;
+    border: 1px solid rgb(211, 209, 206);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 180px;
+    height: 85px;
+}
+.dad-container:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(255, 132, 0, 0.4);
+}
+.son-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 180px;
+    height: 85px;
+    color: #f18203; 
+    font-size: 22px;
+}

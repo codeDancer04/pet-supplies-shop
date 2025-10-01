@@ -1,0 +1,38 @@
+.login-container{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-logo-img{
+    position: absolute;
+    top: 150px;
+    width: 300px;
+    height: 120px;
+}
+.login-form-container {
+
+    /* 新增美化样式 */
+    background: white;                      /* 纯白背景 */
+    border: 2px solid #fa8c16;              /* 橙色实线边框 */
+    border-radius: 50px;                    /* 圆角效果 */
+    box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3); /* 橙色阴影 */
+    padding: 40px;                          /* 内边距 */
+    transition: all 0.3s ease;               /* 添加过渡动画 */
+}
+/* 悬停效果（可选） */
+.login-form-container:hover {
+    box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+    transform: translateY(-10px);
+}
+.signup-link-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10px;
+}
+.space{
+    height: 20px;
+}

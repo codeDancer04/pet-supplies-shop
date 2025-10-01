@@ -1,0 +1,52 @@
+.item-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 250px;
+    height: 320px;
+    border-radius: 20px;
+}
+.item-container:hover{
+    border: solid 1px rgb(255, 145, 0);
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+}
+.item-img-container{
+    width: 230px;
+    height: 230px;
+}
+.item-title-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    color: #000;
+}
+.item-btn-container{
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.space0{
+    width: 20px;
+}
+.space1{
+    width: 50px;
+}
+.space2{
+    width: 10px;
+}
+.name-font {
+  color: #5e3201; 
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 1px; /* 字间距 */
+}
+.price-font {
+  color: #ff0000; /* 橙色 */
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px; /* 字间距 */
+}

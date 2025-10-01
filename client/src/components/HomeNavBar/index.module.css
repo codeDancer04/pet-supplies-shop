@@ -1,0 +1,9 @@
+.home-nav-bar{
+  background-color: #ffffff;
+  height: 64px;
+}
+.spacer {
+  width: 1200px;
+  cursor: default !important;/*禁用鼠标手型效果*/
+  pointer-events: none !important;/*完全禁用鼠标事件*/
+}

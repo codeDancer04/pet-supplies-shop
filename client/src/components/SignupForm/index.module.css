@@ -1,0 +1,43 @@
+.signup-container{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.signup-logo-img{
+    position: absolute;
+    top: 80px;
+    width: 300px;
+    height: 130px;
+}
+.signup-form-container {
+    width: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: white;                      /* 纯白背景 */
+    border: 2px solid #fa8c16;              /* 橙色实线边框 */
+    border-radius: 50px;                    /* 圆角效果 */
+    box-shadow: 0 4px 12px rgba(250, 140, 22, 0.3); /* 橙色阴影 */
+    padding: 40px;                          /* 内边距 */
+    transition: all 0.3s ease;               /* 添加过渡动画 */
+}
+/* 悬停效果（可选） */
+.signup-form-container:hover {
+    box-shadow: 0 6px 16px rgba(250, 140, 22, 0.4);
+    transform: translateY(-10px);
+}
+.ant-form-item-control-input-content{
+    position: relative;
+}
+.signup-form-submit-btn{
+    position: relative;
+    left: 35px;
+    top: 30px;
+}
+.signup-form{
+    width: 400px;
+}

@@ -1,0 +1,22 @@
+.home-search-input{
+    width: 600px;
+    position: absolute;
+    left: 600px;
+    top: 50px;
+    z-index: 900;
+}
+.web-logo-img{
+    width: 220px;
+    position: absolute;
+    left: 370px;
+    top: 10px;
+}
+.space{
+    width: 30px;
+    display: inline-block;
+}
+.a-bar{
+    position: absolute;
+    left: 610px;
+    top: 50px;
+}

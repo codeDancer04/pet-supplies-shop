@@ -1,0 +1,19 @@
+.container{
+    width: 100vw;
+    height: 1000px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+.navbar-container{
+    width: 100vw;
+    color: #000000ff;
+    height: 64px;
+    padding-inline: 0;
+    line-height: '64px';
+    background-color: '#ffffffff';
+}
+.order-container{
+    position: absolute;
+    top: 100px;
+}
