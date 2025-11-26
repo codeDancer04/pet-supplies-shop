@@ -43,3 +43,7 @@
 | **数据库** | MySQL |
 | **认证** | JWT (JSON Web Token) |
 
+![React](https://img.shields.io/badge/React-18.2.0-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue)
+![Vite](https://img.shields.io/badge/Vite-4.0.0-purple)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
