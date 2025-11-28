@@ -9,7 +9,7 @@ const App: React.FC = () =>{
   const [carousel,setCarousel] = useState<string[]>([])
 
   const axiosCarousel = async() =>{
-    const res = await axios('http://localhost:3000/api/carousel');
+    const res = await axios('/api/carousel');
     setCarousel(res.data.data);
   }
 

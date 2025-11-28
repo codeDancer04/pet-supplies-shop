@@ -32,7 +32,7 @@ const onFinish = async(values: any) => {
 
   try {
     //axios.post(url, data, config) 
-    const response = await axios.post('http://localhost:3000/api/signup', formData, {
+    const response = await axios.post('/api/signup', formData, {
       headers: {
         'Content-Type': 'multipart/form-data' // 设置正确的请求头
       }
