@@ -43,24 +43,4 @@
 | **数据库** | MySQL |
 | **认证** | JWT (JSON Web Token) |
 
-## 📦 快速开始
 
-### 环境要求
-- Node.js >= 16.0.0
-- npm >= 7.0 或 yarn >= 1.22
-- MySQL >= 5.7
-
-### 1. 克隆项目
-git clone https://github.com/codeDancer04/pet-supplies-shop.git
-cd pet-supplies-shop
-
-### 2. 安装依赖
-安装前端依赖
-cd client  # 进入前端目录
-
-npm install
-
-安装后端依赖
-cd ../server  # 进入后端目录
-
-npm install
