@@ -6,17 +6,28 @@ import logo from './signup-logo.jpg';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const normFile = (e: any) => {
-  if (Array.isArray(e)) {
-    return e;
+type UploadValue = { originFileObj?: File };
+
+type SignupFormValues = {
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  name: string;
+  avatar?: UploadValue[];
+};
+
+const normFile = (e: unknown) => {
+  if (Array.isArray(e)) return e;
+  if (e && typeof e === 'object' && 'fileList' in e) {
+    return (e as { fileList?: unknown }).fileList;
   }
-  return e?.fileList;
+  return [];
 };
 
 const SignupForm: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-const onFinish = async(values: any) => {
+const onFinish = async(values: SignupFormValues) => {
   // 创建FormData对象，用于处理文件上传
   const formData = new FormData();
   
@@ -26,13 +37,13 @@ const onFinish = async(values: any) => {
   formData.append('name', values.name);
   
   // 如果有上传头像，将第一个文件添加到FormData
-  if (values.avatar && values.avatar.length > 0) {
+  if (values.avatar && values.avatar.length > 0 && values.avatar[0]?.originFileObj) {
     formData.append('avatar', values.avatar[0].originFileObj);
   }
 
   try {
     //axios.post(url, data, config) 
-    const response = await axios.post('/api/signup', formData, {
+    const response = await axios.post('http://localhost:3000/api/signup', formData, {
       headers: {
         'Content-Type': 'multipart/form-data' // 设置正确的请求头
       }
@@ -58,7 +69,7 @@ const onFinish = async(values: any) => {
   }
 };
 
-  const onFinishFailed = (errorInfo: any) => {
+  const onFinishFailed = (errorInfo: unknown) => {
     console.log('Failed:', errorInfo);
   };
 

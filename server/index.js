@@ -1,33 +1,38 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const PORT = 3000;
+const apiRouter = require('./routes/index');
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = express();
-
-// 引入路由模块
-const routes = require('./routes');
-
-// 提供静态资源服务
+app.use(cors());
+app.use(express.json());
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
-// 中间件配置
-app.use(express.json());
-app.use(cors());
+app.use('/api', apiRouter);
 
-// 使用路由模块
-app.use('/api', routes);
-
-// 错误处理中间件
-app.use((err, req, res, next) => {
-  console.error('路由错误:', err);
-  res.status(500).json({
+app.use((req, res) => {
+  res.status(404).json({
     success: false,
-    message: '服务器内部错误',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: '接口不存在'
   });
 });
 
-// 启动服务器
+app.use((err, req, res, next) => {
+  console.error(err);
+  const status =
+    (err && typeof err === 'object' && typeof err.status === 'number' && err.status) ||
+    (err && typeof err === 'object' && typeof err.statusCode === 'number' && err.statusCode) ||
+    (err instanceof SyntaxError ? 400 : 500);
+
+  const message = status === 400 ? '请求体 JSON 解析失败' : '服务器内部错误';
+  const payload = { success: false, message };
+  if (process.env.NODE_ENV !== 'production') {
+    payload.details = err instanceof Error ? err.message : String(err);
+  }
+  res.status(status).json(payload);
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

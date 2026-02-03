@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { cartReducer } from "../components/ShoppingCart/cartReducer";
 import useAuth from "./useAuth";
 import { message, Modal } from "antd";
-import createTokenAxios from "../utils/createTokenAxios";
+import createTokenAxios from "../api/utils/createTokenAxios";
 
     interface CartItemType {
     id: string;
@@ -12,6 +12,14 @@ import createTokenAxios from "../utils/createTokenAxios";
     price: number;
     totalPrice: number;
     key?: string;
+    }
+
+    type ApiCartItem = {
+    id: number | string;
+    name: string;
+    amount: number;
+    price: number;
+    [key: string]: unknown;
     }
 
     type CartState = {
@@ -56,10 +64,13 @@ const axiosData = useCallback(async () => {
           return;
         }
         
-        const formattedData = res.data.data.map((item: any) => ({
-          ...item,
-          key: item.id.toString(),
-          totalPrice: item.price * item.amount 
+        const formattedData: CartItemType[] = (res.data.data as ApiCartItem[]).map((item) => ({
+          id: String(item.id),
+          name: item.name,
+          amount: item.amount,
+          price: item.price,
+          key: String(item.id),
+          totalPrice: item.price * item.amount
         }));
         dispatch({type:'SET_CARTITEMS',payload:formattedData}); 
         message.success('购物车数据查询成功');
@@ -67,10 +78,16 @@ const axiosData = useCallback(async () => {
         dispatch({type:'SET_ERROR',payload:'获取购物车数据失败'});
         message.error('获取购物车数据失败');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.log('API请求失败:', err);
       dispatch({type:'SET_ERROR',payload:'服务器错误，请稍后重试'});
-      if (err.response?.status === 401) {
+      const status = (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        (err as { response?: { status?: number } }).response?.status
+      ) || undefined;
+      if (status === 401) {
         message.error('登录已过期，请重新登录');
         navigate('/login');
       } else {

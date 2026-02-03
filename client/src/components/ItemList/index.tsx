@@ -2,7 +2,6 @@ type Item = {
   id: number;
   name: string;
   category: string;
-  productId: number;
   price: number;
   img_url: string;
 };

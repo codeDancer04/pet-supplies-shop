@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import createTokenAxios from "../utils/createTokenAxios";
+import createTokenAxios from "../api/utils/createTokenAxios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { message } from "antd";
 
@@ -28,7 +28,7 @@ const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
     }
     
     try {
-      const res = await api.get('/api/userInfo');
+      const res = await api.get('/api/userinfo');
       if (res.data.success && res.data.data) {
         setIsLoggedIn(true);
         setUserInfo({
@@ -36,7 +36,7 @@ const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
           name: res.data.data.name || '未知用户'
         });
       }
-    } catch (err: any) {
+    } catch {
       setIsLoggedIn(false);
     } finally {
       setIsAuthChecked(true); // 确保认证检查完成状态被设置
@@ -50,8 +50,8 @@ const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
   const handleLogout = useCallback(async () => {
     try {
       await api.post('/api/logout', {});
-    } catch (error) {
-      // 即使失败，我们也要继续清除本地状态
+    } catch {
+      void 0;
     } finally {
       localStorage.removeItem('token');
       setIsLoggedIn(false);

@@ -17,7 +17,6 @@ const headerStyle: React.CSSProperties = {
 
 const contentStyle: React.CSSProperties = {
   minHeight: 120,
-  lineHeight: '120px',
   color: '#000000ff',
   backgroundColor: '#ffffffff',
   position:'relative',

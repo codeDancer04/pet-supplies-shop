@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../db');
 
 // 获取商品信息
-router.get('/', async (req, res) => {
+router.get('/products', async (req, res) => {
   const { category } = req.query;
 
   try {

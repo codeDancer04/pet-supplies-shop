@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../db');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const path = require('path');
 
 // JWT配置
 const JWT_SECRET = 'my-256-bit-secret';
@@ -11,7 +12,7 @@ const TOKEN_EXPIRES = '24h';
 // 配置multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'server/img/');
+    cb(null, path.join(__dirname, '..', 'img'));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -81,7 +82,7 @@ router.post('/signup', upload.single('avatar'), async (req, res) => {
         phone_number,
         password,
         name,
-        avatarFile ? `${avatarFile.originalname}` : null
+        avatarFile ? avatarFile.filename : null
       ]
     );
 

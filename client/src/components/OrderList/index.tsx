@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { message, Space, Table } from 'antd';
 import type { TableProps } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import createTokenAxios from '../../utils/createTokenAxios';
+import createTokenAxios from '../../api/utils/createTokenAxios';
 import useAuth from '../../hooks/useAuth';
 
 type OrderInfoType = {
@@ -64,20 +64,12 @@ const App: React.FC = () => {
     },
   ];
 
-  const api = createTokenAxios();
+  const api = useMemo(() => createTokenAxios(), []);
   const { isLoggedIn, isAuthChecked } = useAuth(); // 获取认证检查状态
   
-  const handleCancel = async (id: number) => {
-    const res = await api.delete(`/api/orders/${id}`);
-    if (res.data.success) {
-      message.success('订单取消成功');
-      axiosData();
-    }
-  }
-
   const [orderInfo, setOrderInfo] = useState<OrderInfoType[]>([]);
 
-  const axiosData = async () => {
+  const axiosData = useCallback(async () => {
     if (!isLoggedIn) {
       message.error('未登录！');
       return;
@@ -109,14 +101,22 @@ const App: React.FC = () => {
         }
       }
     }
-  }
+  }, [api, isLoggedIn]);
+
+  const handleCancel = useCallback(async (id: number) => {
+    const res = await api.delete(`/api/orders/${id}`);
+    if (res.data.success) {
+      message.success('订单取消成功');
+      axiosData();
+    }
+  }, [api, axiosData]);
 
   useEffect(() => {
     // 只有当认证检查完成后再获取订单数据
     if (isAuthChecked) {
       axiosData();
     }
-  }, [isAuthChecked]); // 依赖 isAuthChecked
+  }, [axiosData, isAuthChecked]); // 依赖 isAuthChecked
 
   return (
     <>

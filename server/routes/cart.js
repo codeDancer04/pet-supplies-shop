@@ -4,7 +4,7 @@ const pool = require('../db');
 const { authenticateJWT } = require('./auth');
 
 // 查询购物车数据（需JWT认证）
-router.get('/', authenticateJWT, async (req, res) => {
+router.get('/cart', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId;
     
@@ -39,7 +39,7 @@ router.get('/', authenticateJWT, async (req, res) => {
 });
 
 // 删除购物车（需JWT认证）
-router.delete('/:itemId', authenticateJWT, async (req, res) => {
+router.delete('/cart/:itemId', authenticateJWT, async (req, res) => {
   const userId = req.user.userId;
   const itemId = req.params.itemId;
   
@@ -75,7 +75,7 @@ router.delete('/:itemId', authenticateJWT, async (req, res) => {
 });
 
 // 添加购物车商品（需JWT认证）
-router.post('/add', authenticateJWT, async (req, res) => {
+router.post('/cart/add', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { productId, amount, totalPrice } = req.body;

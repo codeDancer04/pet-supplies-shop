@@ -4,7 +4,7 @@ const pool = require('../db');
 const { authenticateJWT } = require('./auth');
 
 // 获取订单信息（需JWT认证）
-router.get('/', authenticateJWT, async (req, res) => {
+router.get('/orders', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId;
 
@@ -40,7 +40,7 @@ router.get('/', authenticateJWT, async (req, res) => {
 });
 
 // 删除订单信息（需JWT认证）
-router.delete('/:orderId', authenticateJWT, async (req, res) => {
+router.delete('/orders/:orderId', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId;
     const orderId = req.params.orderId;

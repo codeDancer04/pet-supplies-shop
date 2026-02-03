@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     DribbbleCircleFilled,
     GiftFilled,
@@ -15,45 +15,52 @@ import {
 import { Button, Layout, Menu, message, theme } from 'antd';
 import styles from './index.module.css';
 import ItemList from '../ItemList';
-import createAxios from '../../utils/createAxios';
+import createAxios from '../../api/utils/createAxios';
+import type { AxiosError } from 'axios';
 
 const { Header, Sider, Content } = Layout;
 
+type Product = {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  img_url: string;
+};
+
 const App: React.FC = () => {
-  const api = createAxios();
-  const [products,setProducts] = useState([]);
+  const api = useMemo(() => createAxios(), []);
+  const [products, setProducts] = useState<Product[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   
-  const axiosProduct = async (info:{key:string})=>{  //请求商品信息函数
+  const axiosProduct = useCallback(async (info: { key: string }) => {
     try {
-        const res = await api('/api/products',{
-            params:{
-                category:info.key
-            }
-        });
-        if(res.data.success){
-            console.log('查询成功',res.data);
-            setProducts(res.data.data);
-        }else{
-            message.error(res.data.message);
-            console.log('查询失败');
-        }
-    } catch (error:any) {
-        console.error('请求失败:'+error);
-        message.error(error.res.data.message);
+      const res = await api('/api/products', {
+        params: {
+          category: info.key,
+        },
+      });
+      if (res.data.success) {
+        setProducts(res.data.data);
+      } else {
+        message.error(res.data.message);
+      }
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      message.error(axiosError.response?.data?.message ?? '请求失败');
     }
-  }
+  }, [api]);
 
-  useEffect(()=>{
-    axiosProduct({key:'food'});  //渲染默认商品信息
-  },[])
+  useEffect(() => {
+    axiosProduct({ key: 'food' });
+  }, [axiosProduct]);
 
-  const handleMenuClick = async (info:{key:string})=>{
-    axiosProduct(info);  //请求分类商品信息
-  }
+  const handleMenuClick = async (info: { key: string }) => {
+    axiosProduct(info);
+  };
 
   return (
     <div className={styles['dad-container']}>
@@ -117,7 +124,7 @@ const App: React.FC = () => {
             />
         </Sider>
         <Layout>
-            <Header style={{ padding: 0, background: colorBgContainer }}>
+            <Header className={styles.header} style={{ padding: 0, background: colorBgContainer }}>
             <Button
                 type="text"
                 icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -131,14 +138,13 @@ const App: React.FC = () => {
             <span>分类商品</span>
             </Header>
             <Content
+            className={styles.content}
             style={{
-                margin: '5px 5px',
-                padding: 5,
                 minHeight: 280,
                 background: colorBgContainer,
                 borderRadius: borderRadiusLG,
                 overflowY: 'auto',  // 关键属性：启用垂直滚动
-                maxHeight: 'calc(100vh - 465px)', // 动态计算最大高度
+                maxHeight: 'calc(100vh - 400px)', // 动态计算最大高度
                 height: '100%'      // 确保高度填充
             }}
             >

@@ -1,0 +1,106 @@
+.container {
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.header {
+    background: linear-gradient(135deg, #ff9045 0%, #ff5e00 100%);
+    padding: 12px 16px;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.headerIcon {
+    font-size: 18px;
+}
+
+.messagesContainer {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.userMessage {
+    align-self: flex-end;
+    background-color: #ff7a45;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.aiMessage {
+    align-self: flex-start;
+    background-color: white;
+    color: #333;
+    border: 1px solid #e8e8e8;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.inputArea {
+    padding: 12px;
+    background-color: white;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 8px;
+}
+
+.input {
+    flex: 1;
+    border: 1px solid #d9d9d9;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.input:focus {
+    border-color: #ff7a45;
+    box-shadow: 0 0 0 2px rgba(255, 122, 69, 0.2);
+}
+
+.sendButton {
+    background-color: #ff7a45;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.sendButton:hover {
+    background-color: #ff5e00;
+}
+
+.sendButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

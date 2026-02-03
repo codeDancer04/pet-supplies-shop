@@ -14,31 +14,33 @@ type ItemBlockProps = {
 const API_BASE_URL = 'http://localhost:3000';
 
 const App = (ItemInfo:ItemBlockProps) =>{
+    console.log(ItemInfo);
     return(
-        <>
-            <div className={styles['item-container']}>
-
-                <div className={styles['item-img-container']}>
-                    <ImageLink  imgUrl={`${API_BASE_URL}${ItemInfo.img_url}`} href='#'
-                    imgWidth='100%' imgHeight='100%'
-                    />
-                </div>
-                
-                <div className={styles['item-title-container']}>
-                    <span className={styles['name-font']}>{ItemInfo.name}</span>
-                </div>
-
-                <div className={styles['item-btn-container']}>
-                    <div className={styles.space0}></div>
-                    <span className={styles['price-font']}>{ItemInfo.price}元</span>
-                    <div className={styles.space1}></div>
-                    <AddModal productId={ItemInfo.productId} price={ItemInfo.price}></AddModal>
-                    <div className={styles.space2}></div>
-                    <BuyModal productId={ItemInfo.productId} price={ItemInfo.price}></BuyModal>
-                </div>
-
+        <div className={styles['product-card']}>
+            <div className={styles['image-wrapper']}>
+                <ImageLink  imgUrl={`${API_BASE_URL}/img/${ItemInfo.img_url}`} href='#'
+                imgWidth='100%' imgHeight='100%'
+                />
             </div>
-        </>
+            
+            <div className={styles['product-details']}>
+                <div className={styles['title-wrapper']}>
+                    <span className={styles['product-name']} title={ItemInfo.name}>{ItemInfo.name}</span>
+                </div>
+
+                <div className={styles['card-footer']}>
+                    <span className={styles['product-price']}>
+                        <span className={styles['currency']}>¥</span>
+                        {ItemInfo.price}
+                    </span>
+                    
+                    <div className={styles['actions']}>
+                        <AddModal productId={ItemInfo.productId} price={ItemInfo.price}></AddModal>
+                        <BuyModal productId={ItemInfo.productId} price={ItemInfo.price}></BuyModal>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 };
 export default App;

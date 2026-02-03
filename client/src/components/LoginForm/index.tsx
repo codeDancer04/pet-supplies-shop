@@ -3,13 +3,18 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 import styles from './index.module.css';
 import logo from './loginl-logo.jpg';
 import { Link,useNavigate } from 'react-router-dom';
-import createTokenAxios from '../../utils/createTokenAxios';
+import createTokenAxios from '../../api/utils/createTokenAxios';
+
+type LoginFormValues = {
+  phone_number: string;
+  password: string;
+};
 
 const LoginForm: React.FC = () => {
 
   const navigate = useNavigate();
   const api = createTokenAxios();
-  const onFinish = async (values:any) => {
+  const onFinish = async (values: LoginFormValues) => {
     try {
       // 发送登录请求
       const response = await api.post('/api/login', {
@@ -25,27 +30,28 @@ const LoginForm: React.FC = () => {
       } else {
         message.error(response.data.message || '登录失败');
       }
-    } catch (error:any) {
-
-        const { status, data } = error.response;
-        switch (status) {
-          case 400:
-            message.error(data.message || '请求参数错误');
-            break;
-          case 401:
-            message.error(data.message || '认证失败！')
-            break;
-          case 500:
-            message.error(data.message || '服务器内部错误');
-            break;
-          default:
-            message.error(`未知错误 (${status})`);
-        }
-      } 
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+      const status = axiosError.response?.status;
+      const data = axiosError.response?.data;
+      switch (status) {
+        case 400:
+          message.error(data?.message || '请求参数错误');
+          break;
+        case 401:
+          message.error(data?.message || '认证失败！');
+          break;
+        case 500:
+          message.error(data?.message || '服务器内部错误');
+          break;
+        default:
+          message.error(status ? `未知错误 (${status})` : '请求失败');
+      }
+    }
   
     };
 
-  const onFinishFailed = (errorInfo:any) => {
+  const onFinishFailed = (errorInfo: unknown) => {
     message.warning('请正确填写表单');
     console.log('Failed:', errorInfo);
   };

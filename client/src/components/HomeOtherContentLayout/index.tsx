@@ -1,31 +1,22 @@
-import BlockLink from '../BlockLink';
 import MyCarousel from '../MyCarousel';
 import ProfileBlock from '../ProfileBlock';
+import AIChatBox from '../AIChatBox';
 import styles from './index.module.css';
-import{ AccountBookOutlined, CameraOutlined, FileUnknownOutlined, FormOutlined, PhoneOutlined, RubyOutlined, SkinOutlined, ToolOutlined } from '@ant-design/icons';
 
 const App = ()=>{
     return(
         <>
-        <div className={styles['dad-container']}>
-            <div className={styles['son-container']}>
-                <div className={styles['ad-container']}>
-                    <BlockLink href={'#'} title={'注册会员'} icon={<RubyOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'门店预约'} icon={<FormOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'洗护服务'} icon={<SkinOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'拍摄写真'} icon={<CameraOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'折扣商品'} icon={<AccountBookOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'专业驯化'} icon={<ToolOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'养宠知识'} icon={<FileUnknownOutlined />}></BlockLink>
-                    <BlockLink href={'#'} title={'咨询客服'} icon={<PhoneOutlined />}></BlockLink>
-
+        <div className={styles['layout-wrapper']}>
+            <div className={styles['content-inner']}>
+                <div className={styles['left-section']}>
+                    <AIChatBox />
                 </div>
 
-                <div className={styles['carousel-container']}>
+                <div className={styles['center-section']}>
                     <MyCarousel></MyCarousel>
                 </div>
 
-                <div className={styles['profile-container']}>
+                <div className={styles['right-section']}>
                     <ProfileBlock></ProfileBlock>
                 </div>
                 
