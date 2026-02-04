@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 
 // JWT配置
-const JWT_SECRET = 'my-256-bit-secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'my-256-bit-secret';
 const TOKEN_EXPIRES = '24h';
 
 // 配置multer
@@ -36,8 +36,6 @@ const authenticateJWT = (req, res, next) => {
           message: 'Token已过期或无效'
         });
       }
-      
-      console.log('JWT验证成功，用户ID:', user.userId);
       req.user = user;
       next();
     });
@@ -150,7 +148,6 @@ router.post('/login', async (req, res) => {
 router.get('/userinfo', authenticateJWT, async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log(`请求用户信息，用户ID: ${userId}`);
 
     const [users] = await pool.query(
       `SELECT name, avatar_url FROM accounts WHERE id = ?`,

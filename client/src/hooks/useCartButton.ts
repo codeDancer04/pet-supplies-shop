@@ -1,4 +1,4 @@
-import createTokenAxios from "../api/utils/createTokenAxios";
+import createTokenAxios from "../utils/createTokenAxios";
 import { useState } from "react";
 import useAuth from "./useAuth";
 import { message } from "antd";

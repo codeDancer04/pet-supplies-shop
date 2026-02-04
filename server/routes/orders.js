@@ -22,7 +22,6 @@ router.get('/orders', authenticateJWT, async (req, res) => {
       where o.account_id = ?`,
       [userId]);
       
-      console.log(`请求用户信息，用户ID: ${userId}`);
       console.log('SQL查询结果:', orders);
       
       res.json({

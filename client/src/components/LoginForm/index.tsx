@@ -3,7 +3,7 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 import styles from './index.module.css';
 import logo from './loginl-logo.jpg';
 import { Link,useNavigate } from 'react-router-dom';
-import createTokenAxios from '../../api/utils/createTokenAxios';
+import createTokenAxios from '../../utils/createTokenAxios';
 
 type LoginFormValues = {
   phone_number: string;

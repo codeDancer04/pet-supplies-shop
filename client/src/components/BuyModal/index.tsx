@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, message, Modal } from 'antd';
 import { InputNumber } from "antd";
-import createTokenAxios from '../../api/utils/createTokenAxios';
+import createTokenAxios from '../../utils/createTokenAxios';
 type dataFormType = {
     productId:number,
     amount:number,

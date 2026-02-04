@@ -3,7 +3,7 @@ import { message, Space, Table } from 'antd';
 import type { TableProps } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import createTokenAxios from '../../api/utils/createTokenAxios';
+import createTokenAxios from '../../utils/createTokenAxios';
 import useAuth from '../../hooks/useAuth';
 
 type OrderInfoType = {

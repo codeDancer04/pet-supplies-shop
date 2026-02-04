@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { cartReducer } from "../components/ShoppingCart/cartReducer";
 import useAuth from "./useAuth";
 import { message, Modal } from "antd";
-import createTokenAxios from "../api/utils/createTokenAxios";
+import createTokenAxios from "../utils/createTokenAxios";
 
     interface CartItemType {
     id: string;

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import createAxios from '../../api/utils/createAxios';
+import createAxios from '../../utils/createAxios';
 import { SendOutlined, RobotOutlined } from '@ant-design/icons';
 import styles from './index.module.css';
 
@@ -19,10 +19,12 @@ const AIChatBox = () => {
         }
     ]);
     const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        const el = messagesContainerRef.current;
+        if (!el) return;
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     };
     // 创建 Axios 实例
     const api = useMemo(() => createAxios(), []);
@@ -39,22 +41,26 @@ const AIChatBox = () => {
             text: inputValue,
             sender: 'user'
         };
-
+        // 除了添加新消息，还保留之前全部的历史消息，让ai基于全部上下文生成回复
         const nextMessages = [...messages, userMsg];
         setMessages(nextMessages);
-        setInputValue('');
+        // 发送消息后清空输入框
+        setInputValue(''); 
+        // 发送消息后设置加载状态
         setIsLoading(true);
 
         // 调用 DashScope API
         try {
             const response = await api.post('/api/chat/completions', {
                 model: 'qwen-plus',
-                messages: nextMessages.map((m) => ({
+                // 传递所有消息，包括历史记录
+                messages: nextMessages.slice(-10).map((m) => ({
                     role: m.sender === 'user' ? 'user' : 'assistant',
                     content: m.text
                 }))
-            });
+            }, { timeout: 30000 });
             const data = response.data;
+            //整合模型返回的内容，确保是字符串类型
             const content =
                 (data &&
                     typeof data === 'object' &&
@@ -67,6 +73,7 @@ const AIChatBox = () => {
             if (!content || typeof content !== 'string') {
                 throw new Error('模型返回格式异常');
             }
+            // 组合完整的数据结构，添加到消息列表中
             const aiMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 text: content,
@@ -78,6 +85,7 @@ const AIChatBox = () => {
                 response?: { data?: unknown };
                 message?: unknown;
             };
+            // 处理模型返回的错误信息
             const serverMsg =
                 (maybeAxiosError.response &&
                     maybeAxiosError.response.data &&
@@ -93,9 +101,21 @@ const AIChatBox = () => {
                     (maybeAxiosError.response.data as { error: string }).error) ||
                 (typeof maybeAxiosError.message === 'string' ? maybeAxiosError.message : null);
 
+            const detailsMsg =
+                (maybeAxiosError.response &&
+                    maybeAxiosError.response.data &&
+                    typeof maybeAxiosError.response.data === 'object' &&
+                    'details' in maybeAxiosError.response.data &&
+                    typeof (maybeAxiosError.response.data as { details?: unknown }).details === 'string' &&
+                    (maybeAxiosError.response.data as { details: string }).details) ||
+                null;
+
+            const finalMsg =
+                serverMsg && detailsMsg && serverMsg !== detailsMsg ? `${serverMsg}：${detailsMsg}` : serverMsg;
+
             setMessages(prev => [...prev, {
                 id: (Date.now() + 2).toString(),
-                text: serverMsg ? `抱歉，出错了：${serverMsg}` : '抱歉，我暂时无法回答你的问题。请稍后再试。',
+                text: finalMsg ? `抱歉，出错了：${finalMsg}` : '抱歉，我暂时无法回答你的问题。请稍后再试。',
                 sender: 'ai'
             }]);
         } finally {
@@ -103,10 +123,11 @@ const AIChatBox = () => {
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleSend();
-        }
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        e.stopPropagation();
+        handleSend();
     };
 
     return (
@@ -116,7 +137,7 @@ const AIChatBox = () => {
                 <span>AI 购物助手</span>
             </div>
             
-            <div className={styles.messagesContainer}>
+            <div className={styles.messagesContainer} ref={messagesContainerRef}>
                 {messages.map(msg => (
                     <div 
                         key={msg.id} 
@@ -130,7 +151,6 @@ const AIChatBox = () => {
                         正在思考...
                     </div>
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             <div className={styles.inputArea}>
@@ -138,11 +158,12 @@ const AIChatBox = () => {
                     className={styles.input}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder="我想买..."
                     disabled={isLoading}
                 />
                 <button 
+                    type="button"
                     className={styles.sendButton}
                     onClick={handleSend}
                     disabled={isLoading || !inputValue.trim()}

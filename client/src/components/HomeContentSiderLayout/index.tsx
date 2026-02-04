@@ -15,7 +15,7 @@ import {
 import { Button, Layout, Menu, message, theme } from 'antd';
 import styles from './index.module.css';
 import ItemList from '../ItemList';
-import createAxios from '../../api/utils/createAxios';
+import createAxios from '../../utils/createAxios';
 import type { AxiosError } from 'axios';
 
 const { Header, Sider, Content } = Layout;
