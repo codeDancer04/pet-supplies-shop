@@ -9,8 +9,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'my-256-bit-secret';
 
 // 从请求头中提取 userId
 const getUserIdFromRequest = (req) => {
-    const authHeader = req.headers?.authorization;
-    // 提取token（如果存在）
+    const authHeader = String(req.headers?.authorization ?? '');
+    if (!authHeader) return undefined;
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader;
     try {
         const payload = jwt.verify(token, JWT_SECRET);
@@ -51,8 +51,6 @@ const toChatCompletion = (content, model = 'qwen-plus') => ({
     id: `chatcmpl-${Math.random().toString(16).slice(2)}`
 });
 
-// 这个文件做的事情：提供一个后端接口，把前端的聊天请求转发给阿里云 DashScope（兼容 OpenAI 的 Chat Completions 接口）
-// 这样前端不需要直接暴露/携带 API Key，也避免浏览器跨域等问题。
 router.post('/chat/completions', async (req, res) => {
     try {
         // 前端需要传入 model 和 messages（messages 是一个数组，元素形如 { role, content }）
@@ -80,9 +78,11 @@ router.post('/chat/completions', async (req, res) => {
         if (lastUserText) {
             const decision = await recognizeIntent({ text: lastUserText, userId });
             intentDecision = decision;
+            console.log('意图数据', intentDecision);
             // 如果需要调用工具，执行调用
             if (decision && decision.shouldUseTool && decision.tool) {
                 try {
+                    // 根据工具类型调用不同的工具函数
                     if (decision.tool === 'query_db') {
                         toolResult = await queryDb(decision.args, { userId });
                     } else if (decision.tool === 'create_order') {
@@ -124,7 +124,6 @@ router.post('/chat/completions', async (req, res) => {
 
         // 通过 axios 向 DashScope 发起请求：
         // - validateStatus: () => true 让 axios 不因非 2xx 抛错，便于我们把上游错误原样返回给前端
-        // - timeout: 控制上游请求超时，避免前端一直转圈
         const response = await axios.post(
             'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
             requestBody,
@@ -134,7 +133,8 @@ router.post('/chat/completions', async (req, res) => {
                     'Content-Type': 'application/json'
                 },
                 timeout: 30000,
-                validateStatus: () => true
+                validateStatus: () => true,
+                proxy: false
             }
         );
         //取 DashScope 返回的 数据

@@ -1,19 +1,5 @@
 const axios = require('axios');
 
-const normalize = (text) => String(text ?? '').trim().toLowerCase();
-
-const matchAny = (haystack, keywords) => keywords.some((k) => haystack.includes(k));
-
-const inferQueryResource = (text) => {
-  const t = normalize(text);
-  if (t.includes('订单')) return 'orders';
-  if (t.includes('用户') || t.includes('账号')) return 'user';
-  if ((t.includes('我') || t.includes('我的')) && (t.includes('信息') || t.includes('资料') || t.includes('头像') || t.includes('昵称') || t.includes('个人'))) {
-    return 'user';
-  }
-  return 'products';
-};
-
 // 模型输出可能会带一些说明文字（例如：```json ... ``` 或“以下是 JSON：...”），
 // 这里用“截取第一个 { 到最后一个 }”的方式尽量取出 JSON。
 const extractJsonObject = (text) => {
@@ -24,11 +10,19 @@ const extractJsonObject = (text) => {
   return JSON.parse(s.slice(start, end + 1));
 };
 
+// 调用模型进行意图识别
 const callModelForDecision = async ({ text, userId }) => {
-  const apiKey = process.env.DASHSCOPE_API_KEY ?? '';
-  if (!apiKey) return { shouldUseTool: false, via: 'model', confidence: 0, reason: '服务端未配置 DASHSCOPE_API_KEY' };
 
-  // 这份“工具说明”是给模型看的，帮助它知道你有哪些工具可用
+  const apiKey = process.env.DASHSCOPE_API_KEY ?? '';
+
+  if (!apiKey) return { 
+    shouldUseTool: false, 
+    via: 'model', 
+    confidence: 0, 
+    reason: '服务端未配置 DASHSCOPE_API_KEY' 
+  };
+
+  // 这份“工具说明”是给模型看的，帮助它知道我有哪些工具可用
   const toolSpec = {
     tools: [
       {
@@ -52,8 +46,12 @@ const callModelForDecision = async ({ text, userId }) => {
           role: 'system',
           content:
             '你是电商购物助手的意图识别器。只输出 JSON，不要输出额外文本。' +
-            '返回格式：{"tool":"none"|"query_db"|"create_order","args":{},"confidence":0-1,"reason":"..."}。' +
-            '不得要求/返回其他用户隐私信息；订单/用户查询只能针对当前用户。'
+            '在args中包含必要参数（例如：你要查询商品表（products），就在args中包含resource = products；你要' +
+            '查询订单表（orders），就在args中包含resource = orders；你要查询用户表（users），就在args中包含resource = users；' +
+            '你要创建订单（orders），就在args中包含productId、amount）。' +
+            '不得要求/返回其他用户隐私信息；订单/用户查询只能针对当前用户。' +
+            '再次注意，你只能输出JSON格式的内容，不能输出其他文本。' +
+            '返回格式：{"tool":"none"|"query_db"|"create_order","args":{},"confidence":0-1,"reason":"..."}。'
         },
         {
           role: 'user',
@@ -61,7 +59,11 @@ const callModelForDecision = async ({ text, userId }) => {
         }
       ]
     },
-    { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 30000 }
+    {
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      timeout: 30000,
+      proxy: false
+    }
   );
 
   // 取模型返回的文本内容
@@ -78,35 +80,23 @@ const callModelForDecision = async ({ text, userId }) => {
 
   // 工具名白名单：即使模型胡乱输出，也不会被执行到未知工具
   const tool = obj?.tool === 'query_db' || obj?.tool === 'create_order' ? obj.tool : 'none';
-  const confidence = typeof obj?.confidence === 'number' && Number.isFinite(obj.confidence) ? obj.confidence : 0;
-  const reason = typeof obj?.reason === 'string' ? obj.reason : 'model';
-  const args = obj?.args && typeof obj.args === 'object' && !Array.isArray(obj.args) ? obj.args : {};
+  const confidence = obj?.confidence ?? 0;
+  const reason = obj?.reason ?? '没有理由';
+  const args = obj.args ?? {};
 
   if (tool === 'none') return { shouldUseTool: false, via: 'model', confidence, reason };
-  return { shouldUseTool: true, tool, args, via: 'model', confidence, reason };
+  return { 
+      shouldUseTool: true, 
+      tool, 
+      args, 
+      via: 'model', 
+      confidence, 
+      reason 
+  };
 };
 
-// - shouldUseTool + tool + args（或 shouldUseTool=false）
+
 const recognizeIntent = async ({ text, userId } = {}) => {
-  const normalized = normalize(text);
-  const buyKeywords = ['买', '下单'];
-  const queryKeywords = ['查找', '查', '查询', '搜索', '找', '看看', '有哪些', '有什么', '有'];
-
-  if (matchAny(normalized, buyKeywords)) {
-    return callModelForDecision({ text, userId });
-  }
-
-  if (matchAny(normalized, queryKeywords)) {
-    return {
-      shouldUseTool: true,
-      tool: 'query_db',
-      args: { resource: inferQueryResource(text) },
-      via: 'keyword',
-      confidence: 0.8,
-      reason: '命中查找关键词'
-    };
-  }
-
   return callModelForDecision({ text, userId });
 };
 

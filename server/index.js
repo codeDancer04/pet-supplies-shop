@@ -1,7 +1,7 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const apiRouter = require('./routes/index');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = express();

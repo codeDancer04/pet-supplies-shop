@@ -7,14 +7,14 @@ const makeError = (message, statusCode) => {
   return err;
 };
 
-/**
- * 限制查询条数，防止一次返回太多数据导致性能问题或信息泄露。
- */
+// 限制查询条数，在 1-50 之间
 const clampLimit = (limit) => Math.min(Math.max(limit ?? 20, 1), 50);
 
+// 查询数据库工具函数
 const queryDb = async (input, ctx) => {
   // 限制查询条数
   const limit = clampLimit(input?.limit);
+  // 如果查询商品
   if (input?.resource === 'products') {
     const sql = `
       SELECT 
@@ -34,9 +34,10 @@ const queryDb = async (input, ctx) => {
     const [rows] = await pool.query(sql, [limit]);
     return { resource: 'products', rows };
   }
-
+  // 如果查询用户信息
   if (input?.resource === 'user') {
-    if (!ctx?.userId) throw makeError('需要登录后才能查询用户信息', 401);
+    // 检查用户登录状态
+    if (!ctx?.userId) throw makeError('需要登录后才能查询用户信息（userId 缺失）', 401);
     const sql = `
       SELECT id, name, avatar_url
       FROM accounts
@@ -50,7 +51,7 @@ const queryDb = async (input, ctx) => {
   // 订单查询
   if (input?.resource === 'orders') {
     // 订单属于敏感数据：必须登录，且只能查自己的订单
-    if (!ctx?.userId) throw makeError('需要登录后才能查询订单', 401);
+    if (!ctx?.userId) throw makeError('需要登录后才能查询订单（userId 缺失）', 401);
     // 构建 SQL 查询语句：只返回当前用户的订单
     const sql = `
       SELECT 
@@ -73,27 +74,32 @@ const queryDb = async (input, ctx) => {
   throw makeError('不支持的 resource: ' + input?.resource, 400);
 };
 
+// 创建订单工具函数
 const createOrder = async (input, ctx) => {
 
-  if (!ctx?.userId) throw makeError('需要登录后才能下单', 401);
+  // 检查用户登录状态
+  if (!ctx?.userId) throw makeError('需要登录后才能下单（userId 缺失）', 401);
 
   const productId = Number(input?.productId);
   const amount = Number(input?.amount);
 
   if (!Number.isFinite(productId) || productId <= 0) throw makeError('productId 不合法', 400);
-  // 基础入参校验
   if (!Number.isFinite(amount) || amount <= 0 || amount > 99) throw makeError('amount 不合法', 400);
-
-  const [productRows] = await pool.query(`SELECT id, price, stock FROM products WHERE id = ? LIMIT 1`, [productId]);
-  // 查询商品，拿到单价与库存
+  
+  // 查询商品的信息，目的是为了获取单价与库存
+  const [productRows] = await pool.query(
+    `SELECT id, price, stock FROM products WHERE id = ? LIMIT 1`, 
+    [productId]
+  );
+  
   if (!productRows || productRows.length === 0) throw makeError('商品不存在', 404);
-
   const stock = Number(productRows[0].stock);
   if (Number.isFinite(stock) && stock < amount) throw makeError('库存不足', 409);
 
+  //拿到单价
   const unitPrice = Number(productRows[0].price);
-  // 计算总价：优先使用 input.price（如果是合法数字），否则用单价*数量
-  const price = Number.isFinite(Number(input?.price)) ? Number(input.price) : unitPrice * amount;
+  // 计算总价：用单价*数量
+  const price = unitPrice * amount;
   if (!Number.isFinite(price) || price <= 0) throw makeError('price 不合法', 400);
 
   const [result] = await pool.execute(
@@ -105,7 +111,10 @@ const createOrder = async (input, ctx) => {
     [ctx.userId, new Date().toISOString().slice(0, 19).replace('T', ' '), '未完成', productId, amount, price]
   );
 
-  return { orderId: result.insertId };
+  return { 
+    message: '订单创建成功',
+    orderId: result.insertId
+   };
 };
 
 module.exports = { queryDb, createOrder };

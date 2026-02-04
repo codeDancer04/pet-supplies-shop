@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import createAxios from '../../utils/createAxios';
+import createTokenAxios from '../../utils/createTokenAxios';
 import { SendOutlined, RobotOutlined } from '@ant-design/icons';
 import styles from './index.module.css';
 
@@ -27,7 +27,7 @@ const AIChatBox = () => {
         el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     };
     // 创建 Axios 实例
-    const api = useMemo(() => createAxios(), []);
+    const api = useMemo(() => createTokenAxios(), []);
 
     useEffect(() => {
         scrollToBottom();
