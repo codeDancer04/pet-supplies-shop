@@ -32,7 +32,7 @@ const items: MenuItem[] = [
   },
   {
     label:(
-      <Link to='/profile'>我的订单</Link>
+      <Link to='/profile'>我的信息</Link>
     ),
     key: 'profile',
     icon: <SmileFilled />,

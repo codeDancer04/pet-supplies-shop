@@ -15,14 +15,14 @@ router.get('/orders', authenticateJWT, async (req, res) => {
       o.status,
       o.amount,
       o.price,
-      p.name 
+      p.name,
+      (SELECT img_url FROM product_images WHERE product_id = p.id LIMIT 1) as img_url
       from orders o
       left join products p
       on o.product_id = p.id
-      where o.account_id = ?`,
+      where o.account_id = ?
+      order by o.date desc`,
       [userId]);
-      
-      console.log('SQL查询结果:', orders);
       
       res.json({
         success: true,

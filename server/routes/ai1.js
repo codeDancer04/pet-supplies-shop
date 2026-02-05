@@ -76,7 +76,12 @@ router.post('/chat/completions', async (req, res) => {
         let toolResult = null;  // 工具调用结果
         let intentDecision = null;  // 意图决策
         if (lastUserText) {
-            const decision = await recognizeIntent({ text: lastUserText, userId });
+            // 过滤掉最后一条消息（因为 lastUserText 已经提取出来了，且 recognizeIntent 内部会再次构造 user 消息）
+            // 或者你可以选择保留所有 history，这取决于你想让模型看到多少。
+            // 简单起见，我们把整个 messages 传进去，但在 intentRecognize 内部，我们应该小心不要重复添加最后一条 input。
+            // 更好的做法是：只传历史记录（messages.slice(0, -1)）。
+            const historyMessages = messages.slice(0, -1);
+            const decision = await recognizeIntent({ text: lastUserText, userId, messages: historyMessages });
             intentDecision = decision;
             console.log('意图数据', intentDecision);
             // 如果需要调用工具，执行调用

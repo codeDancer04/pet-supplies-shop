@@ -6,6 +6,8 @@ import { message } from "antd";
 type UserInfo = {
   avatarUrl: string;
   name: string;
+  phoneNumber?: string;
+  address?: string;
 };
 
 const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
@@ -33,7 +35,9 @@ const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
         setIsLoggedIn(true);
         setUserInfo({
           avatarUrl: res.data.data.avatarUrl || defaultAvatarUrl,
-          name: res.data.data.name || '未知用户'
+          name: res.data.data.name || '未知用户',
+          phoneNumber: res.data.data.phoneNumber,
+          address: res.data.data.address
         });
       }
     } catch {
@@ -71,6 +75,7 @@ const useAuth = (defaultAvatarUrl = 'defaultAvatar.jpg') => {
     isLoggedIn,
     isAuthChecked, // 返回认证检查状态
     userInfo,
+    checkLoginStatus,
     handleLogin,
     handleLogout
   };

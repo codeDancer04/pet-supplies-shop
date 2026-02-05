@@ -150,7 +150,10 @@ router.get('/userinfo', authenticateJWT, async (req, res) => {
     const userId = req.user.userId;
 
     const [users] = await pool.query(
-      `SELECT name, avatar_url FROM accounts WHERE id = ?`,
+      `SELECT a.name, a.avatar_url, a.phone_number, u.address 
+       FROM accounts a 
+       LEFT JOIN userinfo u ON a.id = u.account_id 
+       WHERE a.id = ?`,
       [userId]
     );
 
@@ -168,6 +171,8 @@ router.get('/userinfo', authenticateJWT, async (req, res) => {
       data: {
         name: user.name,
         avatarUrl: user.avatar_url,
+        phoneNumber: user.phone_number,
+        address: user.address
       }
     });
   } catch (error) {
@@ -175,6 +180,57 @@ router.get('/userinfo', authenticateJWT, async (req, res) => {
     if (error.code) {
       console.error('数据库错误代码:', error.code);
     }
+    res.status(500).json({
+      success: false,
+      message: '服务器内部错误'
+    });
+  }
+});
+
+// 更新用户信息路由
+router.put('/userinfo', authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { name, address } = req.body;
+
+    // 更新 accounts 表 (如果有 name)
+    if (name !== undefined) {
+      await pool.execute(
+        'UPDATE accounts SET name = ? WHERE id = ?',
+        [name, userId]
+      );
+    }
+
+    // 更新 userinfo 表 (如果有 address)
+    if (address !== undefined) {
+      // 检查 userinfo 是否存在记录
+      const [rows] = await pool.query(
+        'SELECT id FROM userinfo WHERE account_id = ?',
+        [userId]
+      );
+
+      if (rows.length > 0) {
+        // 更新
+        await pool.execute(
+          'UPDATE userinfo SET address = ? WHERE account_id = ?',
+          [address, userId]
+        );
+      } else {
+        // 插入
+        await pool.execute(
+          'INSERT INTO userinfo (account_id, address) VALUES (?, ?)',
+          [userId, address]
+        );
+      }
+    }
+
+    res.json({
+      success: true,
+      message: '用户信息更新成功'
+    });
+
+  } catch (error) {
+    console.error('[UPDATE_USER_ERROR]', error);
     res.status(500).json({
       success: false,
       message: '服务器内部错误'

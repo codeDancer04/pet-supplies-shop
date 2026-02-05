@@ -11,7 +11,7 @@ const extractJsonObject = (text) => {
 };
 
 // 调用模型进行意图识别
-const callModelForDecision = async ({ text, userId }) => {
+const callModelForDecision = async ({ text, userId, messages }) => {
 
   const apiKey = process.env.DASHSCOPE_API_KEY ?? '';
 
@@ -46,13 +46,17 @@ const callModelForDecision = async ({ text, userId }) => {
           role: 'system',
           content:
             '你是电商购物助手的意图识别器。只输出 JSON，不要输出额外文本。' +
-            '在args中包含必要参数（例如：你要查询商品表（products），就在args中包含resource = products；你要' +
-            '查询订单表（orders），就在args中包含resource = orders；你要查询用户表（users），就在args中包含resource = users；' +
-            '你要创建订单（orders），就在args中包含productId、amount）。' +
+            '在args中包含必要参数（例如：如果你要查询商品表（products），就在args中包含resource = products,以及category（只能为food,furniture,toy）；' +
+            '如果你要查询订单表（orders），就在args中包含resource = orders；如果你要查询用户表（users），就在args中包含resource = users；' +
+            '如果你要创建订单（orders），就在args中包含productId或者productName（必须包含一个）、amount（数量，1-99）。' +
             '不得要求/返回其他用户隐私信息；订单/用户查询只能针对当前用户。' +
             '再次注意，你只能输出JSON格式的内容，不能输出其他文本。' +
             '返回格式：{"tool":"none"|"query_db"|"create_order","args":{},"confidence":0-1,"reason":"..."}。'
         },
+        ...(messages ? messages.map(m => ({
+          role: m.role,
+          content: m.content
+        })) : []),
         {
           role: 'user',
           content: JSON.stringify({ input: { text, userId }, toolSpec })
@@ -96,8 +100,8 @@ const callModelForDecision = async ({ text, userId }) => {
 };
 
 
-const recognizeIntent = async ({ text, userId } = {}) => {
-  return callModelForDecision({ text, userId });
+const recognizeIntent = async ({ text, userId, messages } = {}) => {
+  return callModelForDecision({ text, userId, messages });
 };
 
 module.exports = { recognizeIntent };

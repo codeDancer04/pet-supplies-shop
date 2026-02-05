@@ -14,8 +14,8 @@ const clampLimit = (limit) => Math.min(Math.max(limit ?? 20, 1), 50);
 const queryDb = async (input, ctx) => {
   // 限制查询条数
   const limit = clampLimit(input?.limit);
-  // 如果查询商品
-  if (input?.resource === 'products') {
+  // 如果查询商品，没有分类，返回所有商品
+  if (input?.resource === 'products' && !input?.category) { 
     const sql = `
       SELECT 
         p.id,
@@ -30,10 +30,39 @@ const queryDb = async (input, ctx) => {
       LIMIT ?
     `;
 
-    // 返回的是商品列表：给智能体展示“有哪些商品/价格/库存/图片”
+    // 返回的是全部商品列表：给智能体展示“一共有哪些商品/价格/库存/图片”
     const [rows] = await pool.query(sql, [limit]);
-    return { resource: 'products', rows };
+    return { 
+      message: '查询到全部商品列表',
+      resource: 'products', 
+      rows 
+    };
   }
+  // 如果查询商品，有分类，返回该分类商品
+  if (input?.resource === 'products' && input?.category) {
+    const sql = `
+      SELECT 
+        p.id,
+        p.name,
+        p.price,
+        p.stock,
+        p.class,
+        pi.img_url
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id
+      WHERE p.class = ?
+      ORDER BY p.id DESC
+      LIMIT ?
+    `;
+    // 返回的是该分类商品列表：给智能体展示“有哪些商品/价格/库存/图片”
+    const [rows] = await pool.query(sql, [input.category, limit]);
+    return { 
+      message: '查询到' + input.category + '分类商品列表',
+      resource: 'products', 
+      rows 
+    };
+  }
+
   // 如果查询用户信息
   if (input?.resource === 'user') {
     // 检查用户登录状态
@@ -45,7 +74,11 @@ const queryDb = async (input, ctx) => {
       LIMIT 1
     `;
     const [rows] = await pool.query(sql, [ctx.userId]);
-    return { resource: 'user', rows };
+    return { 
+      message: '查询到用户信息',
+      resource: 'user', 
+      rows 
+    };
   }
 
   // 订单查询
@@ -68,7 +101,11 @@ const queryDb = async (input, ctx) => {
       LIMIT ?
     `;
     const [rows] = await pool.query(sql, [ctx.userId, limit]);
-    return { resource: 'orders', rows };
+    return { 
+      message: '查询到用户订单列表',
+      resource: 'orders', 
+      rows 
+    };
   }
 
   throw makeError('不支持的 resource: ' + input?.resource, 400);
@@ -79,9 +116,10 @@ const createOrder = async (input, ctx) => {
 
   // 检查用户登录状态
   if (!ctx?.userId) throw makeError('需要登录后才能下单（userId 缺失）', 401);
-
-  const productId = Number(input?.productId);
   const amount = Number(input?.amount);
+  //如果有productId，就直接根据productId创建订单
+  if(input?.productId){
+    const productId = Number(input?.productId);
 
   if (!Number.isFinite(productId) || productId <= 0) throw makeError('productId 不合法', 400);
   if (!Number.isFinite(amount) || amount <= 0 || amount > 99) throw makeError('amount 不合法', 400);
@@ -115,6 +153,33 @@ const createOrder = async (input, ctx) => {
     message: '订单创建成功',
     orderId: result.insertId
    };
+
+  }else if(input?.productName){ //如果没有productId但是有productName，就使用productName查询商品id，然后创建订单
+    const productName = input?.productName?.trim();
+    // 使用productName查询商品id
+    const [productRows] = await pool.query(
+      `SELECT id FROM products WHERE name = ? LIMIT 1`, 
+      [productName]
+    );
+
+    if (!productRows || productRows.length === 0) {
+      //没有匹配到名称，说明用户输入有误，此时查找全部商品
+      const [allProductRows] = await pool.query(
+        `SELECT id, name FROM products`
+      );
+      //返回全部商品信息，让大模型引导用户输入正确的商品名称
+      return { 
+        message: '用户输入的商品名称可能有误，请引导用户输入正确的商品名称。这是全部商品信息：', 
+        userInput: productName,
+        allProductRows: allProductRows
+      };
+    };
+    // 拿到商品id
+    const productId = Number(productRows[0].id);
+    // 创建订单
+    return await createOrder({productId, amount}, ctx);
+  }
+ 
 };
 
 module.exports = { queryDb, createOrder };
