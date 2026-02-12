@@ -11,6 +11,14 @@ app.use('/img', express.static(path.join(__dirname, 'img')));
 
 app.use('/api', apiRouter);
 
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  if (req.method !== 'GET') return next();
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
