@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, message, Modal } from 'antd';
+import { Button, Input, message, Modal } from 'antd';
 import { InputNumber } from "antd";
 import createTokenAxios from '../../utils/createTokenAxios';
 type dataFormType = {
     productId:number,
     amount:number,
-    price:number
+    price:number,
+    remark?:string,  // 可选备注
   }
 type Props = {
     productId:number,
@@ -17,6 +18,7 @@ const App = ({productId,price}:Props) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [remark, setRemark] = useState('');
 
   const showModal = () => {
     setOpen(true);
@@ -35,6 +37,7 @@ const App = ({productId,price}:Props) => {
             productId:productId,
             amount:quantity,
             price:price * quantity,
+            remark:remark,
         };
         const res = await api.post('/api/buy',dataForm);
         if(res.data.success){
@@ -72,6 +75,10 @@ const App = ({productId,price}:Props) => {
         <InputNumber min={1} max={99} defaultValue={1}
         value={quantity} onChange={(value)=>setQuantity(value || 1)}/>
         <p>总价：¥{(price * quantity).toFixed(2)}</p>
+
+        <p>添加备注：</p>
+        <Input.TextArea rows={3} value={remark} 
+        onChange={(e)=>setRemark(e.target.value || '')} />
       </Modal>
     </>
   );

@@ -2,6 +2,44 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+router.get('/search', async (req, res) => {
+  try {
+    const keywordRaw = req.query.keyword;
+    const keyword = typeof keywordRaw === 'string' ? keywordRaw.trim() : '';
+    if (!keyword) {
+      return res.json({
+        success: true,
+        message: '查询成功',
+        data: []
+      });
+    }
+    const like = `%${keyword}%`;
+    const [rows] = await pool.query(
+      `SELECT 
+        p.id,
+        p.name,
+        p.price,
+        p.stock,
+        p.class,
+        (SELECT img_url FROM product_images WHERE product_id = p.id LIMIT 1) AS img_url
+       FROM products p
+       WHERE p.name LIKE ? OR p.class LIKE ?`,
+      [like, like]
+    );
+    res.json({
+      success: true,
+      message: '查询成功',
+      data: rows
+    });
+  } catch (error) {
+    console.error('数据库查询失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '服务器内部错误'
+    });
+  }
+});
+
 // 获取商品信息
 router.get('/products', async (req, res) => {
   const { category } = req.query;

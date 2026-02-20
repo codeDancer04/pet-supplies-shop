@@ -59,7 +59,7 @@ const OrderList: React.FC = () => {
             message.success('订单已取消');
             fetchOrders(); // 刷新列表
           }
-        } catch (error) {
+        } catch {
           message.error('取消订单失败');
         }
       }

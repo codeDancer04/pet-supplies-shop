@@ -40,18 +40,18 @@ const items: MenuItem[] = [
   {
     key: 'chat',
     label: (
-      <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
-        咨询客服
-      </a>
+      <Link to='/chat'>
+        智能模式
+      </Link>
     ),
     icon:<PhoneFilled />
   },
   {
     key: 'about',
     label: (
-      <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
+      <Link to='/chat'>
         Bug反馈
-      </a>
+      </Link>
     ),
     icon:<ToolFilled />
   },
@@ -66,7 +66,8 @@ const HomeNavBar: React.FC = () => {
       '/login': 'login',
       '/home': 'home',
       '/profile': 'profile',
-      '/cart': 'cart'
+      '/cart': 'cart',
+      '/chat': 'chat',
     };
     setCurrent(pathToKey[location.pathname] || 'home');
   },[location.pathname])

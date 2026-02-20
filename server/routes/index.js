@@ -14,4 +14,8 @@ router.use(productRoutes);
 router.use(orderRoutes);
 router.use(cartRoutes);
 
+/**
+ * @module apiRouter
+ * @description 路由模块，用于处理API请求
+ */
 module.exports = router;

@@ -5,10 +5,12 @@ const cors = require('cors');
 const apiRouter = require('./routes/index');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = express();
+//跨域中间件
 app.use(cors());
 app.use(express.json());
+// 静态文件中间件
 app.use('/img', express.static(path.join(__dirname, 'img')));
-
+// 挂载路由
 app.use('/api', apiRouter);
 
 const clientDist = path.join(__dirname, '../client/dist');

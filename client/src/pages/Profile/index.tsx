@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
         }
     }, [userInfo, form]);
 
-    const onFinish = async (values: any) => {
+    const onFinish = async (values: Record<string, unknown>) => {
         setLoading(true);
         try {
             const res = await api.put('/api/userinfo', values);

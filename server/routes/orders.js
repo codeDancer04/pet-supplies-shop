@@ -74,20 +74,21 @@ router.delete('/orders/:orderId', authenticateJWT, async (req, res) => {
 // 购物生成订单（需JWT认证）
 router.post('/buy', authenticateJWT, async (req, res) => {
   try {
-    const { productId, amount, price } = req.body;
+    const { productId, amount, price, remark } = req.body;
     console.log(req.body);
     const userId = req.user.userId;
     
     const [result] = await pool.execute(`
-      insert into orders(account_id, date, status, product_id, amount, price)
-      values (?, ?, ?, ?, ?, ?)`,
+      insert into orders(account_id, date, status, product_id, amount, price, remark)
+      values (?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         new Date().toISOString().slice(0, 19).replace('T', ' '),
         '未完成',
         productId,
         amount,
-        price
+        price,
+        remark || ''
       ]
     );
     

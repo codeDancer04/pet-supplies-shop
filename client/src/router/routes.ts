@@ -1,4 +1,5 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import Chat from "../pages/Chat";
 import Home from '../pages/Home';
 import Login from "../pages/Login";
 import Profile from "../pages/Profile";
@@ -29,6 +30,10 @@ const routes:RouteObject[] = [
     {
         path:'/cart',
         Component:Cart
-    }
+    },
+    {
+        path:'/chat',
+        Component:Chat
+    },
 ];
 export default createBrowserRouter(routes);

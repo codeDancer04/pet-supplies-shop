@@ -19,7 +19,7 @@ const App = ({defaultAvatarUrl = 'defaultAvatar.jpg'}:Props)=>{
         <div className={styles['profile-card']}>
 
             <div className={styles['avatar-wrapper']}>
-                <Image src={`http://localhost:3000/img/${userInfo.avatarUrl}`}></Image>
+                <Image src={`${import.meta.env.VITE_API_BASE_URL}/img/${userInfo.avatarUrl}`}></Image>
             </div>
 
             <div className={styles['user-info']}>
@@ -33,24 +33,24 @@ const App = ({defaultAvatarUrl = 'defaultAvatar.jpg'}:Props)=>{
             </div>
 
             <div className={styles['quick-links']}>
-                <a href='#' style={{display:'block'}} className={styles['link-item']}>
+                <a href={`${import.meta.env.VITE_APP_BASE_URL}/cart`} style={{display:'block'}} className={styles['link-item']}>
                     <div className={styles['link-content']}>
                     <span>购物车</span>
                     </div>
                 </a>
-                <a href='http://localhost:5173/profile' style={{display:'block'}} className={styles['link-item']}>
+                <a href={`${import.meta.env.VITE_APP_BASE_URL}/profile`} style={{display:'block'}} className={styles['link-item']}>
                     <div className={styles['link-content']}>
-                    <span>我的订单</span>
+                    <span>我的信息</span>
                     </div>
                 </a>
-                <a href='#' style={{display:'block'}} className={styles['link-item']}>
+                <a href={`${import.meta.env.VITE_APP_BASE_URL}/profile`} style={{display:'block'}} className={styles['link-item']}>
                     <div className={styles['link-content']}>
                     <span>修改信息</span>
                     </div>
                 </a>
-                <a href='#' style={{display:'block'}} className={styles['link-item']}>
+                <a href={`${import.meta.env.VITE_APP_BASE_URL}/profile`} style={{display:'block'}} className={styles['link-item']}>
                     <div className={styles['link-content']}>
-                    <span>我的消息</span>
+                    <span>我的订单</span>
                     </div>
                 </a>
             </div>
