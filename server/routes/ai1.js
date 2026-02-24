@@ -51,6 +51,47 @@ const toChatCompletion = (content, model = 'qwen-plus') => ({
     id: `chatcmpl-${Math.random().toString(16).slice(2)}`
 });
 
+const pickProductIdsWithModel = async ({ apiKey, model, userText, products }) => {
+    const response = await axios.post(
+        'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+        {
+            model,
+            messages: [
+                {
+                    role: 'system',
+                    content:
+                        '你是电商选品器。给定用户需求和候选商品列表，请选出最符合需求的商品。' +
+                        '只输出 JSON，不要输出多余文本。JSON 格式为：{"selectedProductIds":[1,2,3]}。' +
+                        '规则：最多选择 12 个；必须从候选商品 id 中选择；如果没有符合的，返回空数组。'
+                },
+                {
+                    role: 'user',
+                    content: `用户需求：${userText}\n候选商品：${JSON.stringify(products)}`
+                }
+            ]
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            timeout: 30000,
+            validateStatus: () => true,
+            proxy: false
+        }
+    );
+
+    const content = response?.data?.choices?.[0]?.message?.content;
+    if (!content || typeof content !== 'string') return [];
+    try {
+        const parsed = JSON.parse(content);
+        const selected = parsed && typeof parsed === 'object' && Array.isArray(parsed.selectedProductIds) ? parsed.selectedProductIds : [];
+        return selected.filter((id) => Number.isFinite(Number(id))).map((id) => Number(id));
+    } catch {
+        return [];
+    }
+};
+
 router.post('/chat/completions', async (req, res) => {
     try {
         // 前端需要传入 model 和 messages（messages 是一个数组，元素形如 { role, content }）
@@ -74,10 +115,11 @@ router.post('/chat/completions', async (req, res) => {
 
         // 进行意图识别与工具调用
         let toolResult = null;  // 工具调用结果
+        let toolResultForModel = null;
         let intentDecision = null;  // 意图决策
         if (lastUserText) {
             // 过滤掉最后一条消息（因为 lastUserText 已经提取出来了，且 recognizeIntent 内部会再次构造 user 消息）
-            // 或者你可以选择保留所有 history，这取决于你想让模型看到多少。
+            // 或者可以选择保留所有 history，这取决于我们想让模型看到多少。
             // 简单起见，我们把整个 messages 传进去，但在 intentRecognize 内部，我们应该小心不要重复添加最后一条 input。
             // 更好的做法是：只传历史记录（messages.slice(0, -1)）。
             const historyMessages = messages.slice(0, -1);
@@ -104,18 +146,47 @@ router.post('/chat/completions', async (req, res) => {
                 }
             }
         }
+        // 如果工具调用返回商品列表，且用户有需求文本，尝试让模型选择商品
+        if (
+            toolResult &&
+            typeof toolResult === 'object' &&
+            toolResult.resource === 'products' &&
+            Array.isArray(toolResult.rows) &&
+            toolResult.rows.length > 0 &&
+            lastUserText
+        ) {
+            const productsForSelection = toolResult.rows.slice(0, 80).map((p) => ({
+                id: p.id,
+                name: p.name,
+                price: p.price,
+                class: p.class,
+                stock: p.stock
+            }));
+            const selectedProductIds = await pickProductIdsWithModel({
+                apiKey,
+                model,
+                userText: lastUserText,
+                products: productsForSelection
+            });
+            toolResultForModel = { ...toolResult, selectedProductIds };
+        } else {
+            toolResultForModel = toolResult;
+        }
 
         // 截取最近 10 条消息，避免 DashScope 上下文过长
         const slicedMessages = Array.isArray(messages) ? messages.slice(-10) : [];
         const assistantSystem = {
             role: 'system',
-            content: '你是宠物用品电商平台的购物助手。优先依据工具结果回答，避免编造。'
+            content:
+                '你是宠物用品电商平台的购物助手。优先依据工具结果回答，避免编造。' +
+                '如果工具结果中包含 selectedProductIds，则只围绕这些商品做推荐与解释，不要逐条复述全部 rows。'
+            
         };
         // 如果有工具调用结果，添加到系统消息中
-        const toolSystem = toolResult
+        const toolSystem = toolResultForModel
             ? {
                 role: 'system',
-                content: `工具调用结果(JSON)：${JSON.stringify(toolResult)}`
+                content: `工具调用结果(JSON)：${JSON.stringify(toolResultForModel)}`
             }
             : null;
 
@@ -147,7 +218,7 @@ router.post('/chat/completions', async (req, res) => {
 
         if (payload && typeof payload === 'object' && req.body?.debug === true) {
             // 手动组装调试信息，告诉前端工具调用结果和意图决策
-            payload.tool_result = toolResult;
+            payload.tool_result = toolResultForModel;
             payload.intent_decision = intentDecision;
         }
 

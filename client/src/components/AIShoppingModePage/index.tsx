@@ -21,6 +21,7 @@ type ToolResult = {
   rows?: Product[];
   message?: string;
   orderId?: number;
+  selectedProductIds?: number[];
 };
 
 type ChatCompletionsResponse = {
@@ -42,7 +43,10 @@ const normalizeProductsFromToolResult = (toolResult?: ToolResult): Product[] | u
   if (!toolResult) return undefined;
   if (toolResult.resource !== 'products') return undefined;
   if (!toolResult.rows?.length) return undefined;
-  return toolResult.rows;
+  if (!toolResult.selectedProductIds?.length) return toolResult.rows;
+  const idSet = new Set(toolResult.selectedProductIds);
+  const selected = toolResult.rows.filter((p) => idSet.has(p.id));
+  return selected.length ? selected : toolResult.rows;
 };
 
 const AIShoppingModePage: React.FC = () => {
@@ -62,10 +66,10 @@ const AIShoppingModePage: React.FC = () => {
   // 快捷提问：帮用户一键生成“信息密度高”的需求描述，便于模型做推荐/调用工具。
   const quickPrompts = useMemo(
     () => [
-      { label: '给金毛推荐狗粮', value: '给金毛推荐性价比高的狗粮，预算 100 元以内。' },
+      { label: '买点狗粮', value: '给金毛推荐一些狗粮' },
       { label: '给猫咪买零食', value: '我想买猫咪零食，有什么推荐？' },
-      { label: '推荐玩具', value: '推荐几款耐咬的狗狗玩具，并说明有什么特点。' },
-      { label: '查全部商品', value: '把店里热销的商品列出来，并按价格从低到高推荐。' }
+      { label: '推荐玩具', value: '推荐几款耐咬的狗狗玩具' },
+      { label: '查全部商品', value: '把店里所有商品列出' }
     ],
     []
   );
@@ -184,12 +188,13 @@ const AIShoppingModePage: React.FC = () => {
                     </Typography.Paragraph>
                   </div>
 
-                  {/* 当工具返回了商品列表时，用卡片网格展示“推荐商品”（图片、价格、库存、快捷下单入口）。 */}
+                  {/* 当工具返回了商品列表时，用卡片网格展示“推荐商品”
+                  （图片、价格、库存、快捷下单入口）。 */}
                   {!!m.products?.length && (
                     <div className={styles.products}>
                       <div className={styles.productsHeader}>
                         <ThunderboltOutlined />
-                        <span>推荐商品</span>
+                        <span>符合条件的商品</span>
                       </div>
                       <div className={styles.productsGrid}>
                         {m.products.map((p) => (
